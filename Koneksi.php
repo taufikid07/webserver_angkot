@@ -1,13 +1,13 @@
 <?php
 class Koneksi{
-	public $db = "sekisui";
+	public $db = "app_angkot_web";
 	
 	public function connect(){
-		return mysqli_connect('fppbaru.fujicon-japan.com', 'fujicon', 'fujicon12345*', $this->db);
+		return mysqli_connect('localhost', 'root', '', $this->db);
 	}
 	
 	public function connectPDO(){
-		return $conn = new PDO("mysql:host=fppbaru.fujicon-japan.com; dbname=$this->db", 'fujicon', 'fujicon12345*');
+		return $conn = new PDO("mysql:host=localhost;dbname=$this->db", 'root', '');
 	}
 }
 ?>

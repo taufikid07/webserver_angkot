@@ -297,7 +297,7 @@ class Dijkstra
 			// # JIKA ALUR GRAPH ANDA SALAH, MAKA DIE() SAMPAI IF INI
 			// ======================================================
 			if(!isset($perbandinganSemuaBobot[0]))
-				return json_encode(['status'=>'error', 'error'=>'alur_graph_anda_salah', 'teks'=>'Alur graph Anda Salah', 'content'=>'']);
+				//return json_encode(['status'=>'error', 'error'=>'alur_graph_anda_salah', 'teks'=>'Alur graph Anda Salah', 'content'=>'']);
 			
 			
 			// NILAI * YG DITANDAI

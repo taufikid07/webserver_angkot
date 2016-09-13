@@ -14,7 +14,7 @@ a{
 </style>
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
-<script src="http://maps.googleapis.com/maps/api/js?key=AIzaSyDEcLCnDGj5pWR336h0Tyu9fjEgwOvMUno&sensor=false&libraries=places"></script>
+<script src="http://maps.googleapis.com/maps/api/js?key=AIzaSyC4o_OEWdGpA87t3nlADDAEE3P90vf8GU0&sensor=false&libraries=places"></script>
 <script>
 // map
 var poly = '';
@@ -306,10 +306,41 @@ function send_dijkstra(){
 			$('#run_dijkstra').show();
 			$('#loading').hide();
 		}
-	});
+	});        
+}
 
-       
-        
+// NEW TRANSIT
+function initMap() {
+  var directionsDisplay = new google.maps.DirectionsRenderer;
+  var directionsService = new google.maps.DirectionsService;
+  var map = new google.maps.Map(document.getElementById('map'), {
+	});
+  directionsDisplay.setMap(map);
+
+  calculateAndDisplayRoute(directionsService, directionsDisplay);
+  document.getElementById('select_tujuan').addEventListener('change', function() {
+    calculateAndDisplayRoute(directionsService, directionsDisplay);
+  });
+}
+
+function calculateAndDisplayRoute(directionsService, directionsDisplay) {
+  var selectedMode = document.getElementById('select_tujuan').value;
+  directionsService.route({
+	//origin: {lat: "+ markeruser.position.lat()+", lng:"+ markeruser.position.lng() +"},
+	//destination 	: '{'lat': ' + markerdestination.position.lat() + ', 'lng: ' + markerdestination.position.lng() + '}',
+    origin: new google.maps.LatLng(r, g),
+	destination: new google.maps.LatLng(rr, gg),
+    // Note that Javascript allows us to access the constant
+    // using square brackets and a string value as its
+    // "property."
+    travelMode: google.maps.TravelMode[selectedMode]
+  }, function(response, status) {
+    if (status == google.maps.DirectionsStatus.OK) {
+      directionsDisplay.setDirections(response);
+    } else {
+      window.alert('Directions request failed due to ' + status);
+    }
+  });
 }
 
 function calcRoute(r,g,rr,gg) {
@@ -352,35 +383,8 @@ function calcRoute(r,g,rr,gg) {
 			  window.alert('Directions request failed due to ' + status);
 			}
 		  });
-            /*var request = {
-                origin: r,
-                destination: g,
-                travelMode: google.maps.TravelMode.WALKING
-            };
-			
-            directionsService.route(request, function (response, status) {
-                if (status == google.maps.DirectionsStatus.OK) {
-                    directionsDisplay.setDirections(response);
-					
-                }
-            });
-			/*var lineSymbol = {
-			  path: 'M 0,-1 0,1',
-			  strokeOpacity: 1,
-			  scale: 4
-			};
-			 var line = new google.maps.Polyline({
-          path: [{lat: -6.915435366792156, lng: 107.64026641845703}, {lat: -6.914824, lng: 107.635634}],
-          strokeOpacity: 0,
-          icons: [{
-            icon: lineSymbol,
-            offset: '0',
-            repeat: '20px'
-          }],
-          map: map
-        });*/
-			
 }
+
 
 function calcRoute2(r22,g22,rr22,gg22) {
               // var r22="-6.915435366792156,107.64026641845703";
@@ -412,8 +416,6 @@ function calcRoute2(r22,g22,rr22,gg22) {
 		 })(
           google.maps.Polyline.prototype.setMap,
           directionsDisplay2);
-    
-  
 			directionsService2.route({
 			origin: new google.maps.LatLng(rr22, gg22),
 			destination: new google.maps.LatLng(r22, g22),
@@ -425,33 +427,6 @@ function calcRoute2(r22,g22,rr22,gg22) {
 			  window.alert('Directions request failed due to ' + status);
 			}
 		  });
-            /*var request2 = {
-                origin: r22,
-                destination: g22,
-                travelMode: google.maps.TravelMode.WALKING
-            };
-            directionsService2.route(request2, function (response, status) {
-                if (status == google.maps.DirectionsStatus.OK) {
-                    directionsDisplay2.setDirections(response);
-					
-                }
-            });
-			
-			/*var lineSymbol = {
-			  path: 'M 0,-1 0,1',
-			  strokeOpacity: 1,
-			  scale: 4
-			};
-			 var line = new google.maps.Polyline({
-          path: [{lat: -6.915435366792156, lng: 107.64026641845703}, {lat: -6.9141006990571, lng: 107.64031671262}],
-          strokeOpacity: 0,
-          icons: [{
-            icon: lineSymbol,
-            offset: '0',
-            repeat: '20px'
-          }],
-          map: map
-        });*/
 }
 /* load google maps v3 */
 google.maps.event.addDomListener(window, 'load', initialize);
