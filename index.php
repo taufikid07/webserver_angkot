@@ -309,40 +309,6 @@ function send_dijkstra(){
 	});        
 }
 
-// NEW TRANSIT
-function initMap() {
-  var directionsDisplay = new google.maps.DirectionsRenderer;
-  var directionsService = new google.maps.DirectionsService;
-  var map = new google.maps.Map(document.getElementById('map'), {
-	});
-  directionsDisplay.setMap(map);
-
-  calculateAndDisplayRoute(directionsService, directionsDisplay);
-  document.getElementById('select_tujuan').addEventListener('change', function() {
-    calculateAndDisplayRoute(directionsService, directionsDisplay);
-  });
-}
-
-function calculateAndDisplayRoute(directionsService, directionsDisplay) {
-  var selectedMode = document.getElementById('select_tujuan').value;
-  directionsService.route({
-	//origin: {lat: "+ markeruser.position.lat()+", lng:"+ markeruser.position.lng() +"},
-	//destination 	: '{'lat': ' + markerdestination.position.lat() + ', 'lng: ' + markerdestination.position.lng() + '}',
-    origin: new google.maps.LatLng(r, g),
-	destination: new google.maps.LatLng(rr, gg),
-    // Note that Javascript allows us to access the constant
-    // using square brackets and a string value as its
-    // "property."
-    travelMode: google.maps.TravelMode[selectedMode]
-  }, function(response, status) {
-    if (status == google.maps.DirectionsStatus.OK) {
-      directionsDisplay.setDirections(response);
-    } else {
-      window.alert('Directions request failed due to ' + status);
-    }
-  });
-}
-
 function calcRoute(r,g,rr,gg) {
 		google.maps.Polyline.prototype.setMap=(function(f,r){
               return function(map){
@@ -461,9 +427,22 @@ echo '</select>';
 <div id='DEBUG'></div>	
 <table>
 <tr>
-            <td colspan="2">
-                <div id="dvDistance">
-                </div>
-            </td>
-        </tr>
+    <td colspan="2">
+        <div id="dvDistance"></div>
+    </td>
+    <td>
+    <br />
+    <form action="Main.php" method="GET">
+     <input type="text" name="koord_user_lat" value="-6.906791"></input>
+     <input type="text" name="koord_user_lng" value="107.587604"></input>
+     
+     <input type="text" name="koord_destination_lat" value="-6.940575"></input>
+     <input type="text" name="koord_destination_lng" value="107.658329"></input>
+     
+     <input type="submit" name="submit" value="Submit"></input>
+    </form>
+    </td>
+</tr>
 </table>
+
+

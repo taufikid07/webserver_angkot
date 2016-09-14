@@ -9,6 +9,7 @@ include "Tambah_simpul.php";
 include "Dijkstra.php";
 include "Angkot.php";
 
+
 class Main extends GraphToArray
 {
 	public $koneksi;
@@ -43,11 +44,11 @@ class Main extends GraphToArray
 		
 		// id_old yg gak dikerjakan pas Get_simpul() didalam fungsi getSimpulAwalAkhirJalur()
 		$this->id_buang = 0;
-
 	}
 	
 	public function core($lat0, $lng0, $lat1, $lng1)
 	{
+		//var_dump($lng1);
 		$this->getSimpulAwalAkhirJalur($lat0, $lng0, 'awal', /*tambahan-->*/ $this->id_buang); 
 		$this->getSimpulAwalAkhirJalur($lat1, $lng1, 'akhir', /*tambahan-->*/ $this->id_buang);
 		
@@ -72,14 +73,16 @@ class Main extends GraphToArray
 		// ALGORITMA DIJKSTRA LANCAR JAYA
 		else{
 			$jsonPolyline = $this->drawRoute($content);
-			
 			return $jsonPolyline;
 		}
+		
 	}
+	//echo 'WOOOOIII';
 	
 	public function getSimpulAwalAkhirJalur($lat, $lng, $kerjain, $id_buang)
 	{
 		// DAPATKAN KOORDINAT ANGKUTAN UMUM TERDEKAT DARI POSISI KITA / POSISI TUJUAN
+		//var_dump($id_buang);
 		$get 		= new Get_koordinat_awal_akhir();
 		$jsonPosisi = $get->Get_simpul($lat, $lng, $id_buang);		
 		
@@ -93,7 +96,6 @@ class Main extends GraphToArray
 		$node_simpul_awal0 	= $j['node_simpul_awal0'];
 		$node_simpul_awal1 	= $j['node_simpul_awal1'];
 		$index_coordinate 	= $j['index_coordinate_json'];
-		
 		// CEK JALUR ANGKUTAN UMUM
 		// tidak perlu tambah simpul
 		if( $status == 'tidak_tambah_simpul' )
@@ -121,7 +123,6 @@ class Main extends GraphToArray
 		{			
 			// kerjain simpul awal
 			if($kerjain == "awal"){				
-		
 				// cari simpul (5,4) dan (4-5) di Tambah_simpul.php
 				$tb = new Tambah_simpul();
 				//echo $node_simpul_awal0 .', '.$node_simpul_awal1 .','. $index_coordinate;
@@ -136,7 +137,6 @@ class Main extends GraphToArray
 				$this->graph 			= json_decode($d['graph'], true); // graph[][]
 
 			}else{
-				
 				// cari simpul (5,4) dan (4-5) di Tambah_simpul.php
 				$tb = new Tambah_simpul();
 				$jadi_json = $tb->dobelSimpul($node_simpul_awal0, $node_simpul_awal1, $index_coordinate, $this->graph);
@@ -155,14 +155,11 @@ class Main extends GraphToArray
 		else if( $status == 'tambah_simpul_single' )
 		{
 			if($kerjain == "awal"){
-
 				// cari simpul (5,4) dan (4-5) di Tambah_simpul.php
 				$tb = new Tambah_simpul();
 				$jadi_json = $tb->singleSimpul($node_simpul_awal0, $node_simpul_awal1, $index_coordinate, $this->graph);
-				
 				// decode json
 				$d = json_decode($jadi_json, true);
-				
 				// return
 				$this->old_simpul_awal 	= $d['simpul_lama'];
 				$this->simpul_awal 		= $d['simpul_baru']; // misal 6
@@ -197,18 +194,14 @@ class Main extends GraphToArray
 		$semua_latlng = array();
 
 		for($i = 0; $i < (count($exp_shortest_path)-1); $i++){
-			
 			$select = "SELECT jalur FROM graph where simpul_awal =" . $exp_shortest_path[$start] . " and simpul_tujuan =" . $exp_shortest_path[(++$start)];
 			$query  = mysqli_query($this->koneksi, $select);			
 			$fetch	= mysqli_fetch_array($query, MYSQLI_ASSOC);
-			
 			$json = json_decode($fetch['jalur'], true);
 			$koordinat = $json['coordinates'];
-			
 			// DAPATKAN KOORDINAT LAT,LNG DARI FIELD JALUR
 			// get coordinate JSON
 			for($w = 0; $w < count($koordinat); $w++){
-				
 				$latlngs = $koordinat[$w];
 				$lats = $latlngs[0];
 				$lngs = $latlngs[1];
@@ -224,19 +217,16 @@ class Main extends GraphToArray
 		$a = new Angkot();
 		// [{"koordinat_angkot":{"lat":-6.2880200009082,"lng":106.91497564316},"no_angkot":["T04"]}]
 		$angkot_array = $a->angkot_shortest_path($exp_shortest_path, $this->old_simpul_awal, $this->old_simpul_akhir, /*tambahan-->*/ $this->maxRow0, $this->maxRow1);
-		
 		// return
 		//$return_json = ['jalur_shortest_path'=>$semua_latlng, 'angkot'=>$angkot_array];	
 		$return_json = ['jalur_shortest_path'=>$semua_latlng, 'angkot'=>$angkot_array];			
 		return json_encode($return_json);
 	}
-	
 	/**
 	* MEMPREDIKSI 2 SIMPUL BARU SEBELUM DILAKUKAN PENAMBAHAN SIMPUL
 	* @RETURN $maxRow0, $maxRow1 : int
 	*/
 	public function maxRowDB(){
-		
 		$select = "SELECT max(CONVERT(simpul_awal, SIGNED INTEGER)) as max_sa, max(CONVERT(simpul_tujuan, SIGNED INTEGER)) as max_st FROM graph";
 		$query  = mysqli_query($this->koneksi, $select);
 		$fetch  = mysqli_fetch_array($query, MYSQLI_ASSOC);
@@ -250,31 +240,22 @@ class Main extends GraphToArray
 		}else{
 			$max_simpul_db = $max_simpulTujuan_db;
 		}
-		
 		// return
 		$this->maxRow0 = ($max_simpul_db+1);
 		$this->maxRow1 = ($max_simpul_db+2);
 	}
 }// end CLASS
-
-if(isset($_POST['koord_user'], $_POST['koord_destination'])){
+if(isset($_GET['koord_user_lat'], $_GET['koord_destination_lat'])){
+	echo 'WOOii ORIGINAL ==>USER'.$_GET['koord_user_lat'].'=='.$_GET['koord_user_lng'].'===><br>
+		===>DESTINASI '.$_GET['koord_destination_lat'].' == '.$_GET['koord_destination_lng'].'<br>';
 	
-	$koord_user 		= json_decode($_POST['koord_user'], true);
-	$koord_destination 	= json_decode($_POST['koord_destination'], true);
-	
-	//print_r($koord_user);
-	//echo $koord_destination;
-	//die();
+	//$koord_user 			= json_decode($_GET['koord_user'], true);
+	//$koord_destination 	= json_decode($_GET['koord_destination'], true);
+	//echo 'WOOII Json_decode ==>'.$koord_user.'==='.$koord_destination.'<br>';	
 	$a = new Main();
-	$shortest_path = $a->core($koord_user['lat'], $koord_user['lng'], $koord_destination['lat'], $koord_destination['lng']);
-	//$shortest_path = $a->core(-6.338843516774621, 106.85749053955078, -6.35914593243388, 106.86967849731445);# terakhir
-	//$shortest_path = $a->core(-6.365543586486009, 106.87787532806396, -6.35914593243388, 106.86967849731445);#fix/25-08
-	//$shortest_path = $a->core(-6.297895039696718, 106.86504364013672, -6.2927762525228745, 106.8698501586914);#fix/25-08
-	//$shortest_path = $a->core(-6.355136695311239, 106.8585205078125, -6.35914593243388, 106.86967849731445);
+	$shortest_path = $a->core($_GET['koord_user_lat'], $_GET['koord_user_lng'], $_GET['koord_destination_lat'], $koord_destination['lng']);
+	echo $shortest_path.'<br><br><br>';
 	
-	// return
-	
-	echo $shortest_path;
-	//echo "ere";
+	var_dump($shortest_path);
 }
 ?>

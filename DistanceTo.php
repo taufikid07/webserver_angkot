@@ -3,18 +3,7 @@
 # DISTANCE TWO COORDINATES
 # @RETURN metres
 */
-class DistanceTo{
-
-	/**
-	* http://www.geodatasource.com/developers/php
-	* DISTANCE TWO COORDINATES
-	* @PARAM lat1 double
-	* @PARAM lng1 double
-	* @PARAM lat2 double
-	* @PARAM lng2 double
-	* @RETURN metres
-	*/
-	
+class DistanceTo{	
 	function distanceTo($lat1, $lng1, $lat2, $lng2) 
 	{
 		set_time_limit(0);
