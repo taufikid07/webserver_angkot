@@ -6,10 +6,8 @@ class Tambah_simpul extends Count_Bobot_Tambah_Simpul{
 	// koneksi DB
 	public $koneksi;
 	public $koneksiPDO;
-	
 	//  tampung id baru dari DB
 	public $temporary_id = [];
-	
 	/**
 	* before Action
 	* set CONNECTION
@@ -19,7 +17,6 @@ class Tambah_simpul extends Count_Bobot_Tambah_Simpul{
 		$this->koneksi 		= $k->connect();
 		$this->koneksiPDO 	= $k->connectPDO();
 	}
-	
 	/**
 	 * @FUNGSI
 	 *  MEYISIPKAN SIMPUL BARU 
@@ -48,18 +45,13 @@ class Tambah_simpul extends Count_Bobot_Tambah_Simpul{
 		// cari index kolomnya nodes1 (4) dari graph[baris][index kolom]
 		// JUMLAH BARIS PER KOLOM SIMPUL
 		$jumlah_baris = count($graph[$nodes0]);
-		
 		for($l = 0; $l < $jumlah_baris; $l++){
-
 			if(isset($graph[$nodes0][$l])){
-				
 				// [5][0] = 4->721.666
 				$simpulAwal = $graph[$nodes0][$l];
-				
 				// 4->721.666
 				$explode = explode('->', $simpulAwal);				
 				$simpul_tujuan_ = $explode[0]; // 4
-				
 				// jika 4 == 4 (node1)
 				if(trim($simpul_tujuan_) == trim($nodes1))
 				{					
@@ -69,17 +61,13 @@ class Tambah_simpul extends Count_Bobot_Tambah_Simpul{
 			}
 			else break;		
 		}// for
-		
-		
 		// index dari graph[baris][kolom] yang akan di edit
 		$baris = $nodes0;
 		$kolom = $index_kolom_graph;
-
 		// ambil koordinatnya dari simpul 5-4
 		$select	= "SELECT jalur FROM graph where simpul_awal = ".$nodes0." and simpul_tujuan = ".$nodes1;
 		$query 	= mysqli_query($this->koneksi, $select);
 		$fetch 	= mysqli_fetch_array($query, MYSQLI_ASSOC);		
-		
 		// --
 		// get coordinates JSON
 		$json_coordinates 	= $fetch['jalur'];
@@ -97,8 +85,7 @@ class Tambah_simpul extends Count_Bobot_Tambah_Simpul{
 		// cari maksimal simpul, (buat penomoran simpul baru)
 		$select1 = "SELECT max(CONVERT(simpul_awal, SIGNED INTEGER)) as max_sa, max(CONVERT(simpul_tujuan, SIGNED INTEGER)) as max_st FROM graph";
 		$query1  = mysqli_query($this->koneksi, $select1);
-		$fetch1  = mysqli_fetch_array($query1, MYSQLI_ASSOC);		
-		
+		$fetch1  = mysqli_fetch_array($query1, MYSQLI_ASSOC);	
 		$max_simpul_db			= 0;
 		$max_simpulAwal_db 		= $fetch1['max_sa'];			
 		$max_simpulTujuan_db 	= $fetch1['max_st'];
@@ -107,40 +94,29 @@ class Tambah_simpul extends Count_Bobot_Tambah_Simpul{
 		}else{
 			$max_simpul_db = $max_simpulTujuan_db;
 		}
-		
 		// pecah koordinat dari AWAL->TENGAH			
 		$limit 	= $index_koordinat_json;
 		// @extends
 		$bobot 	= $this->Count_Bobot_Tambah_Simpul(0, $limit, $jArrCoordinates); // 0, koordinat tengah, jSON coordinates
-		
 		//replace array graph[5][0] = 6->888.6
-		$graph[$baris][$kolom] = ($max_simpul_db+1) . "->" . $bobot;				
-		
+		$graph[$baris][$kolom] = ($max_simpul_db+1) . "->" . $bobot;	
 		// buat dan simpan (new record) json koordinat yang baru ke DB
 		$start_loop = 0;
 		// @local
 		$this->createAndSave_NewJsonCoordinate($start_loop, $limit, $jArrCoordinates, $nodes0, ($max_simpul_db + 1), $bobot);
-
 		// reset bobot
 		$bobot = 0;
-			
 		// pecah koordinat dari TENGAH->AKHIR
 		$start_loop1 	= $index_koordinat_json;
 		$limit1 		= (count($jArrCoordinates) - 1); // - 1 karena array mulai dari 0
 		// @extends
 		$bobot 	= $this->Count_Bobot_Tambah_Simpul($index_koordinat_json, $limit1, $jArrCoordinates); // coordinate tengah sampai akhir
-		
-		
 		// new array graph[6][0] = 4->777.4
 		$graph[($max_simpul_db+1)][0] = $nodes1 . "->" . $bobot; //didefinisikan [0] karena index baru di graph[][]
-		
 		// buat dan simpan (new record) json koordinate yang baru ke DB
 		$this->createAndSave_NewJsonCoordinate($start_loop1, $limit1, $jArrCoordinates, ($max_simpul_db + 1), $nodes1, $bobot);
-		
 		// reset bobot
 		$bobot = 0;
-
-
 		// HITUNG SIMPUL YANG DOBEL (4-5), BUKAN YANG ASLI (5-4)
 		//==============================================================
 		// dibalik, nodes0 jadi nodes1; example (5-4) jadi (4-5)

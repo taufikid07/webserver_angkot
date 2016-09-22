@@ -3,7 +3,6 @@
 * ==============================================
 * KONVERSI GRAPH KE DALAM BENTUK ARRAY 2 DIMENSI
 * ==============================================
-*
 * ALGORITMA DIJKSTRA YANG DIGUNAKAN ADALAH DALAM BENTUK TABEL, SEPERTI CONTOH DIBAWAH :
    --------- ---------- --------- --------- ---------
   |   0     |    1     |    2    |    3    |    4    |

@@ -3,7 +3,6 @@ class Angkot
 {
 	// koneksi DB
 	public $koneksi;
-	
 	/**
 	* before Action
 	*/
@@ -11,7 +10,6 @@ class Angkot
 		$k = new Koneksi();
 		$this->koneksi = $k->connect();
 	}
-	
 	/**
 	* MENENTUKAN JENIS ANGKUTAN UMUM YANG MELEWATI JALUR SHORTEST PATH
 	* @RETURN JSON KOORDINAT ANGKOT
@@ -31,7 +29,6 @@ class Angkot
 		$gabungSimpul_all = "";
     	$listAngkutanUmum = array();
     	$listSimpulAngkot = array();
-
     	// CARI SIMPUL_OLD (misal 4->6->5) SEBELUM KOORDINAT DIPECAH
     	// misal 4-5 dipecah menjadi 4-6-5, berarti simpul_old awal = 4, simpul_old akhir = 5
 		// total perulangannnya dikurang 1
@@ -152,6 +149,7 @@ class Angkot
  
         $replace_jalur = str_replace(',,', ',', $gabungSimpul_all); //  ,1-5,,5-6,,6-7, => ,1-5,5-6,6-7,
 		$select1	= "SELECT count(*) as jml_angkot, no_trayek FROM angkutan_umum where simpul like '%" . $replace_jalur . "%'";
+		//var_dump ($select1);
 		$query1 	= mysqli_query($this->koneksi, $select1);
 		$fetch1		= mysqli_fetch_array($query1);
 		
@@ -180,7 +178,6 @@ class Angkot
 			$lats = $latlngs[0];
 			$lngs = $latlngs[1];
 			$return_array = [['koordinat_angkot'=>['lat'=>$lats, 'lng'=>$lngs], 'no_angkot'=>$siAngkot]];
-			
 			return $return_array;
 			die();
 		}
@@ -274,14 +271,11 @@ class Angkot
 			$select = "SELECT jalur FROM graph where simpul_awal = '" . $simpulx . "'";
 			$query	= mysqli_query($this->koneksi, $select);
 			$fetch	= mysqli_fetch_array($query, MYSQLI_ASSOC);
-			
 			// dapatkan koordinat Lat,Lng dari field koordinat (3)
 			$json_db = $fetch['jalur'];
-
 			// get JSON
 			$jObject = json_decode($json_db, true);
 			$jArrCoordinates = $jObject['coordinates'];
-
 			// get first coordinate JSON
 			$latlngs = $jArrCoordinates[0];
 			$lats = $latlngs[0];

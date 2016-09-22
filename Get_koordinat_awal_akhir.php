@@ -1,9 +1,7 @@
 <?php
 class Get_koordinat_awal_akhir extends DistanceTo{
-
 	// koneksi DB
 	public $koneksi = "";
-	
 	/**
 	* before Action
 	*/
@@ -11,13 +9,12 @@ class Get_koordinat_awal_akhir extends DistanceTo{
 		$k = new Koneksi();
 		$this->koneksi = $k->connect();
 	}	
-	
 	/**
 	 * @FUNGSI
 	 *  MENYELEKSI SIMPUL YG AKAN DIKERJAKAN
 	 *  jika ada simpul 1-0 dan 0-1 maka yg dikerjakan hanya 1-0 ( karena koordinat 1-0 sama dengan 0-1 (koordinat hanya dibalik) )
 	 * @PARAMETER
-	 *   latx : latitude user atau SMK
+	 *   latx : latitude user akhir atau user awal
 	 *   lngx : longitude user atau destination
 	 *   context : MainActivity context
 	 * @RETURN
@@ -28,14 +25,11 @@ class Get_koordinat_awal_akhir extends DistanceTo{
 		// your coordinate
 		$user_lat = $latx;
 		$user_lng = $lngx;
-
 		// TAMPUNG NODE DARI FIELD SIMPUL_AWAL DAN TUJUAN DI TABEL GRAPH, TRS DIGABUNG; contoh 1,0 DAN MASUKKAN KE ARRAY
 		$barisDobel 			= array();
 		$indexBarisYgDikerjakan = array();
-
 		// filter simpul yg akan dikerjakan
 		$select = mysqli_query($this->koneksi, "SELECT * FROM graph where id not in($id_buang) and simpul_awal != '' and simpul_tujuan != '' and jalur != '' and bobot != ''");
-
 		// AMBIL SIMPUL DARI FIELD SIMPUL_AWAL DAN SIMPUL_TUJUAN DI TABEL GRAPH, TRS DIGABUNG; contoh 1,0 TRS MASUKKAN KE ARRAY		
 		// LOOPING DI BAWAH INI UNTUK MEMERIKSA BARIS DOBEL {SIMPULNYA YG DOBEL} 1,0 -> 0,1 {1,0 DIHITUNG TAPI 0,1 GAK DIHITUNG}
 		$i = 0;
@@ -49,13 +43,11 @@ class Get_koordinat_awal_akhir extends DistanceTo{
 			
 			$gabungSimpul = $fieldSimpulAwal . "," . $fieldSimpulTujuan;			
 			$gabung_balikSimpul = $fieldSimpulTujuan . "," . $fieldSimpulAwal;
-
 			// SELEKSI RUAS YANG DOBEL; CONTOH : 1,0 == 0,1
 			// PILIH SALAH SATU, MISAL : 1,0
 			if(empty($barisDobel))
 			{
 				array_push($barisDobel, $gabung_balikSimpul);
-				
 				// field id pada tabel graph
 				array_push($indexBarisYgDikerjakan, $field['id']);
 			}else
@@ -63,32 +55,25 @@ class Get_koordinat_awal_akhir extends DistanceTo{
 				if(!in_array($gabungSimpul, $barisDobel))
 				{	
 					array_push($barisDobel, $gabung_balikSimpul);
-					
 					// field id pada tabel graph
 					array_push($indexBarisYgDikerjakan, $field['id']);
 				}
 			}
 		}
-		
 		// QUERY BARIS YANG GAK DOBEL
 		$id_where_in = implode(',', $indexBarisYgDikerjakan);//echo $id_where_in;		
 		$selectRow = mysqli_query($this->koneksi, "SELECT * FROM graph where id in($id_where_in)");
-		
 		// CARI JARAK
 		// LOOPING SEMUA RECORD
 		$obj = new stdClass();
 		for($index_obj = 0; $kolom = mysqli_fetch_array($selectRow, MYSQLI_ASSOC); $index_obj++){
-
 			// VARIABEL BUAT CARI 1 JARAK DALAM 1 RECORD (1 record isinya banyak koordinat)			
 			// simpan jarak user ke koordinat simpul dalam meter
 			$jarakUserKeKoordinatSimpul = array();
-
 			// dapatkan koordinat Lat,Lng dari field koordinat (3)
 			$json = $kolom['jalur'];
-
 			// decode JSON	coordinate
 			$jsonOneRoute = json_decode($json, true);
-
 			// data json
 			$dataNode		= $jsonOneRoute['nodes'][0];
 			$nodeSplit		= explode('-', $dataNode);
@@ -96,7 +81,6 @@ class Get_koordinat_awal_akhir extends DistanceTo{
 			$node1			= $nodeSplit[1];
 			$dataBobot		= $jsonOneRoute['distance_metres'][0];
 			$countCoordinate= (count($jsonOneRoute['coordinates']) - 1); // dikurang 1 karena buat index array
-			
 			// hitung jarak user ke koordinat angkutan umum
 			foreach($jsonOneRoute['coordinates'] as $coordinate){
 				$json_lat 	= $coordinate[0];
@@ -105,7 +89,6 @@ class Get_koordinat_awal_akhir extends DistanceTo{
 				$jarak 		= $this->distanceTo($user_lat, $user_lng, $json_lat, $json_lng);				
 				array_push($jarakUserKeKoordinatSimpul, $jarak);
 			}
-
 			// CARI bobot yg paling kecil
 			$index_koordinatSimpul = 0;
 			for($m = 0; $m < count($jarakUserKeKoordinatSimpul); $m++)
@@ -118,10 +101,8 @@ class Get_koordinat_awal_akhir extends DistanceTo{
 					$index_koordinatSimpul = $m;
 				}			
 			}
-
 			// field id dari table graph
 			$row_id = $kolom['id'];
-			
 			// masukkan index koordinat array, bobot terkecil dan jumlah koordinat ke JSON
 			$list = array();
 			$list['row_id'] 		= (int)$row_id;
@@ -129,7 +110,6 @@ class Get_koordinat_awal_akhir extends DistanceTo{
 			$list['bobot'] 			= $jarakUserKeKoordinatSimpul[0];
 			$list['nodes']			= $dataNode;
 			$list['count_koordinat']= $countCoordinate;
-
 			// Create json
 			// example output : 
 			// {"0" : [{"row_id":17, "index":"7", "bobot":"427.66", "count_koordinat":"15", "nodes":"0-1"}]}
@@ -226,8 +206,7 @@ class Get_koordinat_awal_akhir extends DistanceTo{
 		$jadi_json['node_simpul_awal0'] 	= $field_simpul_awal;
 		$jadi_json['node_simpul_awal1'] 	= $field_simpul_tujuan;
 		$jadi_json['index_coordinate_json'] = $indexCoordinate;
-//console.log($field_simpul_awal);
-		
+		//console.log($field_simpul_awal);
 		return json_encode($jadi_json);
 	}//public
 }

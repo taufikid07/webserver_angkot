@@ -1,15 +1,48 @@
 <?php
 class Dijkstra
 {
+	/**
+	* MENCARI 1 JALUR TERPENDEK DENGAN ALGORITMA DIJSKTRA DARI GRAPH ARRAY
+	* GRAPH ARRAY SEPERTI DIBAWAH INI :
+	  [0][0] = '1->10';
+	  [0][1] = '2->11';
+	  [0][2] = '3->40';
+	  
+	  [1][0] = '0->10';
+	  [1][1] = '2->55';
+	  [1][2] = '4->20';
+	  
+	  [2][0] = '0->11';
+	  [2][1] = '1->55';
+	  [2][3] = '1->54';
+	  
+	  [3][0] = '4->89';
+	  [3][0] = '4->89';
+	  
+	  [4][0] = '0->90';
+	  [4][3] = '3->89';
+	* GRAPH ARRAY YANG SUDAH DIKERJAKAN DALAM MPERHITUNGAN ALGORITMA DIJKSTRA :
+	  [0][0] = '1->10->y';
+	  [0][1] = '2->11->y';
+	  [0][2] = '3->40->y';
+	  [1][0] = '0->10->y';	
+	  ...
+	* @param arg_graph array[][]
+	* @param simpulAwal int
+	* @param simpulTujuan int
+	* @return string, contoh 0->1->4
+	*/
 	function jalurTerpendek($arg_graph, $simpulAwal, $simpulTujuan){
+		
 		// SIMPUL_AWAL == SIMPUL_TUJUAN, MAKA DIE()
 		// 0 == 0
 		if($simpulAwal == $simpulTujuan){
-			//return json_encode(['status'=>'error','error'=>'lokasi_anda_sudah_dekat','teks'=>'Lokasi Anda Sudah Dekat','content'=>'']);
-		}		
+			return json_encode(['status'=>'error','error'=>'lokasi_anda_sudah_dekat','teks'=>'Lokasi Anda Sudah Dekat','content'=>'']);
+		}
+		
 		// SIMPUL_AWAL OR SIMPUL_TUJUAN NOT FOUND
 		if(!array_key_exists($simpulAwal, $arg_graph) || !array_key_exists($simpulTujuan, $arg_graph)){
-			//return print_r(json_encode(['status'=>'error','error'=>'simpul_input_tidak_ditemukan','teks'=>"could not find the input : $simpulAwal or $simpulTujuan", 'content'=>'']));
+			return print_r(json_encode(['status'=>'error','error'=>'simpul_input_tidak_ditemukan','teks'=>"could not find the input : $simpulAwal or $simpulTujuan", 'content'=>'']));
 		}
 		
 		$graph 		 	= $arg_graph;
@@ -18,12 +51,27 @@ class Dijkstra
         $simpul_tujuan 	= $simpulTujuan;
 		$jml_simpul 	= count($arg_graph);
 		
+		/**
+		* TANDAI SIMPUL YANG AKAN DIKERJAKAN DENGAN TANDA BINTANG (*)
+		* MISAL SOAL : CARI JALUR TERPENDEK DARI SIMPUL 0 KE SIMPUL 4 !
+		   --------- ---------- --------- --------- ---------
+		  |   0(*)  |   1(*)   |  2(*)   |    3    |   4(*)  | <-- KOLOM SIMPUL
+		   --------- ---------- --------- --------- ---------
+		  | 0->1=10 | 1->0=10  | 2->0=11 | 3->4=89 | 4->0=90 | <-- BARIS; BOBOT = 90
+		  | 0->2=11 | 1->2=55  | 2->1=55 |     	   | 4->3=89 |
+		  | 0->3=40 | 1->4=20  | 2->3=54 |         |         |
+		   --------- ---------- --------- --------- ---------
+		* MAKA HASILNYA $simpulYangDikerjakan = array(0, 1, 2, 4);
+		*/
 		$simpulYangDikerjakan = array(); 
+		
 		// UNTUK MENYIMPAN NILAI-NILAI * YANG DITANDAI
 		$simpulYangSudahDikerjakan_bawah = array();
 
 		$nilaiSimpulYgDitandai 		= 0;
 		$nilaiSimpulFixYgDitandai 	= 0;
+	
+	
 		// #HANDLE PERULANGAN
 		// PERULANGAN INI TIDAK AKAN BERHENTI (--$perulangan;) SAMPAI ALGORITMA DIJKSTRA MENEMUKAN 1 JALUR TERPENDEK
 		// 
@@ -31,11 +79,23 @@ class Dijkstra
 		{
 			// UNTUK MNDAPATKAN 1 BOBOT PALING MINIMUM DARI SETIAP SIMPUL
 			$perbandinganSemuaBobot = array();
+			
 			// DAFTARKAN SIMPUL pertama YANG AKAN DIKERJAKAN KE DALAM ARRAY
 			if(!in_array($simpul_maju, $simpulYangDikerjakan)){
 				array_push($simpulYangDikerjakan, $simpul_maju);
 			}
 			
+			/** 
+			* PERULANGAN (KOLOM) SIMPUL-SIMPUL YANG DITANDAI
+			   --------- ---------- --------- --------- ---------
+			  |   0(*)  |   1(*)   |  2(*)   |    3    |   4(*)  | <-- KOLOM SIMPUL
+			   --------- ---------- --------- --------- ---------
+			  | 0->1=10 | 1->0=10  | 2->0=11 | 3->4=89 | 4->0=90 |
+			  | 0->2=11 | 1->2=55  | 2->1=55 |     	   | 4->3=89 |
+			  | 0->3=40 | 1->4=20  | 2->3=54 |         |         |
+			   --------- ---------- --------- --------- ---------
+			* PERULANGANNYA : array(0, 1, 2, 4);
+			*/
 			for($perulanganSimpul = 0; $perulanganSimpul < count($simpulYangDikerjakan); $perulanganSimpul++)
 			{
 				// HITUNG JUMLAH BARIS PER KOLOM SIMPUL
@@ -44,10 +104,14 @@ class Dijkstra
 				// 2(*) = 3 BARIS;
 				// 4(*) = 2 BARIS;
 				$jumlah_baris = count($graph[ $simpulYangDikerjakan[$perulanganSimpul] ]);
+
 				// TAMPUNG BOBOT MINIMUM DARI SETIAP KOLOM SIMPUL BERDASARKAN BARIS SCR URUT[0][0],[0][1] DST
 				$bobot_baris = array();
+
 				// JUMLAH BARIS YANG BELUM DIKERJAKAN
-				$baris_belum_dikerjakan = 0;				
+				$baris_belum_dikerjakan = 0;
+
+				
 				/**
 				* PERULANGAN BARIS TABEL, CARI BOBOT DARI 1 KOLOM SIMPUL
 				   --------- 
@@ -68,6 +132,7 @@ class Dijkstra
 					// RUAS  : explode[0] = 1
 					// BOBOT : explode[1] = 10
 					$explode = explode('->', $ruas_dan_bobot);
+					
 					/**
 					* CARI BOBOT YG BELUM DIKERJAKAN (YG TIDAK ADA TANDA ->Y)
 					* MISAL : 
@@ -89,6 +154,7 @@ class Dijkstra
 							  $nilaiSimpulYgDitandai = $nilaiSimpulFixYgDitandai;
 							}
 						}
+
 						/** 
 						* MASUKKAN BOBOT BARIS YANG SUDAH DIUPDATE KE DALAM ARRAY
 						* ILUSTRASI MENGUPDATE BOBOT DALAM TABEL :
@@ -132,7 +198,9 @@ class Dijkstra
 				if(!in_array($simpulYangDikerjakan[$perulanganSimpul], $simpulYangSudahDikerjakan_bawah)){
 					array_push( $simpulYangSudahDikerjakan_bawah, $simpulYangDikerjakan[$perulanganSimpul] );
 				}
-			}// end for perulanganSimpul     
+			}// end for perulanganSimpul                
+			
+			
 			/**
 			* DAPATKAN 1 BOBOT PALING MINIMUM DARI SIMPUL YG DITANDAI (*)
 			   ------------- ------------ --------- 
@@ -159,7 +227,20 @@ class Dijkstra
 			
 			foreach($simpulYangDikerjakan as $idx => $v)
 			{
+				/**
+				  JUMLAH BARIS per KOLOM SIMPUL
+				   -------------- 
+				  |     0(*)     | <-- KOLOM SIMPUL
+				   -------------- 
+				  | 0->1=10 (13) | <-- baris 1
+				  | 0->2=11 (12) | <-- baris 2
+				  | 0->3=40 (45) | <-- baris 3
+				   --------------
+				*/
 				$length_baris = $graph[$simpulYangDikerjakan[$idx]];
+				
+				
+				
 				for($baris1 = 0; $baris1 < $length_baris; $baris1++) {
 					if( isset($graph[ $simpulYangDikerjakan[$indexAwalAsli] ][$baris1]) )
 					{
@@ -221,6 +302,7 @@ class Dijkstra
 			
 			// NILAI * YG DITANDAI
 			$nilaiSimpulFixYgDitandai = $perbandinganSemuaBobot[0];
+			
 			
 			// LOOPING $perulangan lagi jika SIMPUL_MAJU != SIMPUL_TUJUAN
 			if($simpul_maju != $simpul_tujuan){
